@@ -51,6 +51,9 @@
 /* Board Header files */
 #include "Board.h"
 
+/* lwIP core includes */
+#include "lwip/opt.h"
+
 #define TASKSTACKSIZE   512
 
 /* Pin driver handle */
@@ -118,6 +121,8 @@ int main(void)
                   "Halt the target to view any SysMin contents in ROV.\n");
     /* SysMin will only print to the console when you call flush or exit */
     System_flush();
+
+    lwip_init();
 
     /* Start BIOS */
     BIOS_start();
