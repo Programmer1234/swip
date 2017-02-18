@@ -10,8 +10,24 @@
 
 //#define BYTE_ORDER  BIG_ENDIAN
 
+#define LWIP_NO_STDINT_H 1
 
 /* Define generic types used in lwIP */
+typedef unsigned char  u8_t;
+typedef char     	   s8_t;
+typedef unsigned short u16_t;
+typedef short    	   s16_t;
+typedef unsigned int   u32_t;
+typedef int            s32_t;
+typedef unsigned int uintptr_t;
+typedef uintptr_t mem_ptr_t;
+
+/* Compiler hints for packing structures */
+#define PACK_STRUCT_FIELD(x)    x
+#define PACK_STRUCT_STRUCT  __attribute__((packed))
+#define PACK_STRUCT_BEGIN
+#define PACK_STRUCT_END
+
 /***
 typedef uint8_t     u8_t;
 typedef int8_t      s8_t;
