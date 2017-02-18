@@ -54,42 +54,170 @@
 /* lwIP core includes */
 #include "lwip/opt.h"
 
+/* new */
+#include "lwip/pbuf.h"
+#include "lwip/udp.h"
+#include "lwip/tcp.h"
+#include "lwip/ip_addr.h"
+#include <string.h>
+#include <stdio.h>
+
+#define UDP_SERVER_PORT    7   /* define the UDP local connection port */
+#define UDP_CLIENT_PORT    7   /* define the UDP remote connection port */
+#define MESSAGE1   "     STM32F4x7      "
+#define MESSAGE2   "  STM32F-4 Series   "
+
+u8_t   data[100];
+uint32_t message_count = 0;
+
+/**
+  * @brief This function is called when an UDP datagrm has been received on the port UDP_PORT.
+  * @param arg user supplied argument (udp_pcb.recv_arg)
+  * @param pcb the udp_pcb which received data
+  * @param p the packet buffer that was received
+  * @param addr the remote IP address from which the packet was received
+  * @param port the remote port from which the packet was received
+  * @retval None
+  */
+void udp_echoserver_receive_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip4_addr *addr, u16_t port)
+{
+
+  /* Connect to the remote client */
+  udp_connect(upcb, addr, UDP_CLIENT_PORT);
+
+  /* Tell the client that we have accepted it */
+  udp_send(upcb, p);
+
+  /* free the UDP connection, so we can accept new clients */
+  udp_disconnect(upcb);
+
+  /* Free the p buffer */
+  pbuf_free(p);
+
+}
+
+
+void udp_receive_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip4_addr *addr, u16_t port)
+{
+
+  /*increment message count */
+  message_count++;
+
+  /* Free receive pbuf */
+  pbuf_free(p);
+
+  /* free the UDP connection, so we can accept new clients */
+  udp_remove(upcb);
+}
+
+
+void udp_echoserver_init(void)
+{
+   struct udp_pcb *upcb;
+   err_t err;
+
+   /* Create a new UDP control block  */
+   upcb = udp_new();
+
+   if (upcb)
+   {
+     /* Bind the upcb to the UDP_PORT port */
+     /* Using IP_ADDR_ANY allow the upcb to be used by any local interface */
+      err = udp_bind(upcb, IP_ADDR_ANY, UDP_SERVER_PORT);
+
+      if(err == ERR_OK)
+      {
+        /* Set a receive callback for the upcb */
+        udp_recv(upcb, udp_echoserver_receive_callback, NULL);
+      }
+      else
+      {
+        printf("can not bind pcb");
+      }
+   }
+   else
+   {
+     printf("can not create pcb");
+   }
+}
+
+void udp_echoclient_connect(void)
+{
+  struct udp_pcb *upcb;
+  struct pbuf *p;
+  struct ip4_addr DestIPaddr;
+  u16_t pbuf_len;
+  err_t err;
+
+  /* Create a new UDP control block  */
+  upcb = udp_new();
+
+  if (upcb!=NULL)
+  {
+    /*assign destination IP address */
+    IP4_ADDR( &DestIPaddr, 127, 0, 0, 1 );
+
+    /* configure destination IP address and port */
+    err= udp_connect(upcb, &DestIPaddr, UDP_SERVER_PORT);
+
+    if (err == ERR_OK)
+    {
+      /* Set a receive callback for the upcb */
+      udp_recv(upcb, udp_receive_callback, NULL);
+
+      sprintf((char*)data, "sending udp client message %d", (int*)message_count);
+
+      pbuf_len = strlen((char*)data);
+
+      /* allocate pbuf from pool*/
+      p = pbuf_alloc(PBUF_TRANSPORT,pbuf_len , PBUF_POOL);
+
+      if (p != NULL)
+      {
+        /* copy data to pbuf */
+        pbuf_take(p, (char*)data, strlen((char*)data));
+
+        /* send udp data */
+        udp_send(upcb, p);
+
+        /* free pbuf */
+        pbuf_free(p);
+      }
+      else
+      {
+        #ifdef SERIAL_DEBUG
+         printf("\n\r can not allocate pbuf ");
+        #endif
+      }
+    }
+    else
+    {
+      #ifdef SERIAL_DEBUG
+       printf("\n\r can not connect udp pcb");
+      #endif
+    }
+  }
+  else
+  {
+    #ifdef SERIAL_DEBUG
+     printf("\n\r can not create udp pcb");
+    #endif
+  }
+}
+
+
 #define TASKSTACKSIZE   512
 
-/* Pin driver handle */
-static PIN_Handle ledPinHandle;
-static PIN_State ledPinState;
 
-Task_Struct task0Struct, task1Struct;
-Char task0Stack[TASKSTACKSIZE], task1Stack[TASKSTACKSIZE];
+Task_Struct task0Struct;
+Char task0Stack[TASKSTACKSIZE];
 
-/*
- * Application LED pin configuration table:
- *   - All LEDs board LEDs are off.
- */
-PIN_Config ledPinTable[] = {
-    Board_LED0 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    Board_LED1 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    PIN_TERMINATE
-};
-
-/*
- *  ======== heartBeatFxn ========
- *  Toggle the Board_LED0. The Task_sleep is determined by arg0 which
- *  is configured for the heartBeat Task instance.
- */
-Void heartBeatFxn(UArg arg0, UArg arg1)
-{
-    while (1) {
-        Task_sleep((UInt)arg0);
-        PIN_setOutputValue(ledPinHandle, Board_LED0,
-                           !PIN_getOutputValue(Board_LED0));
-    }
-}
 
 void initLwip(UArg arg0, UArg arg1)
 {
     lwip_init();
+    udp_echoserver_init();
+    udp_echoclient_connect();
 }
 
 
@@ -100,37 +228,18 @@ void initLwip(UArg arg0, UArg arg1)
 int main(void)
 {
     Task_Params taskParams;
-    Task_Params taskParams1;
 
     /* Call board init functions */
     Board_initGeneral();
-    // Board_initI2C();
-    // Board_initSPI();
-    // Board_initUART();
-    // Board_initWatchdog();
 
-    /* Construct heartBeat Task  thread */
-    Task_Params_init(&taskParams);
-    taskParams.arg0 = 1000;
-    taskParams.stackSize = TASKSTACKSIZE;
-    taskParams.stack = &task0Stack;
-    taskParams.instance->name = "heartBeat";
-    Task_construct(&task0Struct, (Task_FuncPtr)heartBeatFxn, &taskParams, NULL);
 
     /* Construct lwip_init Task Thread */
-    Task_Params_init(&taskParams1);
+    Task_Params_init(&taskParams);
     taskParams.stackSize = TASKSTACKSIZE;
-    taskParams.stack = &task1Stack;
+    taskParams.stack = &task0Stack;
     taskParams.instance->name = "lwipInit";
-    Task_construct(&task1Struct, (Task_FuncPtr)initLwip, &taskParams1, NULL);
+    Task_construct(&task0Struct, (Task_FuncPtr)initLwip, &taskParams, NULL);
 
-    /* Open LED pins */
-    ledPinHandle = PIN_open(&ledPinState, ledPinTable);
-    if(!ledPinHandle) {
-        System_abort("Error initializing board LED pins\n");
-    }
-
-    PIN_setOutputValue(ledPinHandle, Board_LED1, 1);
 
     System_printf("Starting the example\nSystem provider is set to SysMin. "
                   "Halt the target to view any SysMin contents in ROV.\n");
