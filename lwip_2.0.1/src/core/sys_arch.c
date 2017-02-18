@@ -6,7 +6,7 @@
  */
 #include <lwip/opt.h>
 #include <arch/sys_arch.h>
-
+#include <ti/sysbios/knl/Clock.h>
 
 sys_prot_t sys_arch_protect(void)
 {
@@ -20,5 +20,5 @@ void sys_arch_unprotect(sys_prot_t pval)
 
 u32_t sys_now(void)
 {
-  return 0;
+  return Clock_getTicks();
 }

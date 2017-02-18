@@ -60,8 +60,8 @@
 static PIN_Handle ledPinHandle;
 static PIN_State ledPinState;
 
-Task_Struct task0Struct;
-Char task0Stack[TASKSTACKSIZE];
+Task_Struct task0Struct, task1Struct;
+Char task0Stack[TASKSTACKSIZE], task1Stack[TASKSTACKSIZE];
 
 /*
  * Application LED pin configuration table:
@@ -87,12 +87,20 @@ Void heartBeatFxn(UArg arg0, UArg arg1)
     }
 }
 
+void initLwip(UArg arg0, UArg arg1)
+{
+    lwip_init();
+}
+
+
+
 /*
  *  ======== main ========
  */
 int main(void)
 {
     Task_Params taskParams;
+    Task_Params taskParams1;
 
     /* Call board init functions */
     Board_initGeneral();
@@ -109,6 +117,13 @@ int main(void)
     taskParams.instance->name = "heartBeat";
     Task_construct(&task0Struct, (Task_FuncPtr)heartBeatFxn, &taskParams, NULL);
 
+    /* Construct lwip_init Task Thread */
+    Task_Params_init(&taskParams1);
+    taskParams.stackSize = TASKSTACKSIZE;
+    taskParams.stack = &task1Stack;
+    taskParams.instance->name = "lwipInit";
+    Task_construct(&task1Struct, (Task_FuncPtr)initLwip, &taskParams1, NULL);
+
     /* Open LED pins */
     ledPinHandle = PIN_open(&ledPinState, ledPinTable);
     if(!ledPinHandle) {
@@ -121,8 +136,6 @@ int main(void)
                   "Halt the target to view any SysMin contents in ROV.\n");
     /* SysMin will only print to the console when you call flush or exit */
     System_flush();
-
-    lwip_init();
 
     /* Start BIOS */
     BIOS_start();
