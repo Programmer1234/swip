@@ -45,7 +45,7 @@
 // #include <ti/drivers/I2C.h>
 #include <ti/drivers/PIN.h>
 // #include <ti/drivers/SPI.h>
-// #include <ti/drivers/UART.h>
+#include <ti/drivers/UART.h>
 // #include <ti/drivers/Watchdog.h>
 
 /* Board Header files */
@@ -89,7 +89,7 @@ Void heartBeatFxn(UArg arg0, UArg arg1)
 
 void initLwip(UArg arg0, UArg arg1)
 {
-    lwip_init();
+	main_lwip();
 }
 
 
@@ -106,7 +106,7 @@ int main(void)
     Board_initGeneral();
     // Board_initI2C();
     // Board_initSPI();
-    // Board_initUART();
+    Board_initUART();
     // Board_initWatchdog();
 
     /* Construct heartBeat Task  thread */

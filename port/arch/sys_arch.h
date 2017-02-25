@@ -26,43 +26,50 @@
  *
  * This file is part of the lwIP TCP/IP stack.
  * 
- * Author: Simon Goldschmidt
+ * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef LWIP_HDR_LWIPOPTS_H__
-#define LWIP_HDR_LWIPOPTS_H__
+#ifndef LWIP_ARCH_SYS_ARCH_H
+#define LWIP_ARCH_SYS_ARCH_H
 
-/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
-#define NO_SYS                          1
-#define LWIP_NETCONN                    0
-#define LWIP_SOCKET                     0
-#define SYS_LIGHTWEIGHT_PROT            0
+/* HANDLE is used for sys_sem_t but we won't include windows.h */
+struct _sys_sem {
+  void *sem;
+};
+typedef struct _sys_sem sys_sem_t;
+#define sys_sem_valid(sema) (((sema) != NULL) && ((sema)->sem != NULL)  && ((sema)->sem != (void*)-1))
+#define sys_sem_set_invalid(sema) ((sema)->sem = NULL)
 
-#define LWIP_IPV6                       1
-#define IPV6_FRAG_COPYHEADER            1
-#define LWIP_IPV6_DUP_DETECT_ATTEMPTS   0
+/* HANDLE is used for sys_mutex_t but we won't include windows.h */
+struct _sys_mut {
+  void *mut;
+};
+typedef struct _sys_mut sys_mutex_t;
+#define sys_mutex_valid(mutex) (((mutex) != NULL) && ((mutex)->mut != NULL)  && ((mutex)->mut != (void*)-1))
+#define sys_mutex_set_invalid(mutex) ((mutex)->mut = NULL)
 
-/* Enable DHCP to test it */
-#define LWIP_DHCP                       1
+#ifndef MAX_QUEUE_ENTRIES
+#define MAX_QUEUE_ENTRIES 100
+#endif
+struct lwip_mbox {
+  void* sem;
+  void* q_mem[MAX_QUEUE_ENTRIES];
+  u32_t head, tail;
+};
+typedef struct lwip_mbox sys_mbox_t;
+#define SYS_MBOX_NULL NULL
+#define sys_mbox_valid(mbox) ((mbox != NULL) && ((mbox)->sem != NULL)  && ((mbox)->sem != (void*)-1))
+#define sys_mbox_set_invalid(mbox) ((mbox)->sem = NULL)
 
-/* Turn off checksum verification of fuzzed data */
-#define CHECKSUM_CHECK_IP               0
-#define CHECKSUM_CHECK_UDP              0
-#define CHECKSUM_CHECK_TCP              0
-#define CHECKSUM_CHECK_ICMP             0
-#define CHECKSUM_CHECK_ICMP6            0
+/* DWORD (thread id) is used for sys_thread_t but we won't include windows.h */
+typedef u32_t sys_thread_t;
 
-/* Minimal changes to opt.h required for tcp unit tests: */
-#define MEM_SIZE                        16000
-#define TCP_SND_QUEUELEN                40
-#define MEMP_NUM_TCP_SEG                TCP_SND_QUEUELEN
-#define TCP_SND_BUF                     (12 * TCP_MSS)
-#define TCP_WND                         (10 * TCP_MSS)
-#define LWIP_WND_SCALE                  1
-#define TCP_RCV_SCALE                   0
-#define PBUF_POOL_SIZE                  400 /* pbuf tests need ~200KByte */
+sys_sem_t* sys_arch_netconn_sem_get(void);
+void sys_arch_netconn_sem_alloc(void);
+void sys_arch_netconn_sem_free(void);
+#define LWIP_NETCONN_THREAD_SEM_GET()   sys_arch_netconn_sem_get()
+#define LWIP_NETCONN_THREAD_SEM_ALLOC() sys_arch_netconn_sem_alloc()
+#define LWIP_NETCONN_THREAD_SEM_FREE()  sys_arch_netconn_sem_free()
 
-/* Minimal changes to opt.h required for etharp unit tests: */
-#define ETHARP_SUPPORT_STATIC_ENTRIES   1
+#endif /* LWIP_ARCH_SYS_ARCH_H */
 
-#endif /* LWIP_HDR_LWIPOPTS_H__ */

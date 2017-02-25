@@ -12,4 +12,5 @@
 	<createSlaveProjects value=""/>
 	<templateProperties value="id=com.ti.rtsc.TIRTOSCC13XX_CC26XX.example_8,type=rtsc,products=com.ti.rtsc.TIRTOSCC13XX_CC26XX,xdcToolsVersion=3_32_00_06_core,target=ti.targets.arm.elf.M3,platform=ti.platforms.simplelink:CC2650F128,buildProfile=release,isHybrid=true,configuroOptions=--compileOptions &quot;${COMPILER_FLAGS} &quot;,"/>
 	<filesToOpen value=""/>
+	<isTargetManual value="false"/>
 </projectOptions>
