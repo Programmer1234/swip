@@ -8,25 +8,20 @@
 #ifndef LWIP_2_0_1_SRC_INCLUDE_LWIP_LWIPOPTS_H_
 #define LWIP_2_0_1_SRC_INCLUDE_LWIP_LWIPOPTS_H_
 
-#define LWIP_IPv4					1
-#define LWIP_IPv6					1
 
 #define NO_SYS                      1
-
-#define LWIP_HAVE_LOOPIF			1
-#define LWIP_NETIF_LOOPBACK			1
-#define LWIP_LOOPBACK_MAX_PBUFS		10
-
+#define MEM_LIBC_MALLOC             1
+#define MEMP_MEM_MALLOC             1
 #define MEM_ALIGNMENT               4
-#define MEM_SIZE                    (1 * 1024)
-#define MEMP_NUM_PBUF               16
-#define MEMP_NUM_UDP_PCB            4
-#define MEMP_NUM_TCP_PCB            4
-#define MEMP_NUM_TCP_PCB_LISTEN     4
-#define MEMP_NUM_TCP_SEG            16
+#define MEM_SIZE                    (4 * 1024 * 1024)
+#define MEMP_NUM_PBUF               1024
+#define MEMP_NUM_UDP_PCB            20
+#define MEMP_NUM_TCP_PCB            20
+#define MEMP_NUM_TCP_PCB_LISTEN     16
+#define MEMP_NUM_TCP_SEG            128
 #define MEMP_NUM_REASSDATA          32
 #define MEMP_NUM_ARP_QUEUE          10
-#define PBUF_POOL_SIZE              16
+#define PBUF_POOL_SIZE              512
 #define LWIP_ARP                    1
 #define IP_REASS_MAX_PBUFS          64
 #define IP_FRAG_USES_STATIC_BUF     0
@@ -37,9 +32,9 @@
 #define LWIP_BROADCAST_PING         1
 #define LWIP_MULTICAST_PING         1
 #define LWIP_RAW                    1
-#define TCP_WND                     (2 * TCP_MSS)
-#define TCP_MSS                     140
-#define TCP_SND_BUF                 (2 * TCP_MSS)
+#define TCP_WND                     (4 * TCP_MSS)
+#define TCP_MSS                     1460
+#define TCP_SND_BUF                 (8 * TCP_MSS)
 #define TCP_LISTEN_BACKLOG          1
 #define LWIP_NETIF_STATUS_CALLBACK  1
 #define LWIP_NETIF_LINK_CALLBACK    1
