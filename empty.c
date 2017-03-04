@@ -54,14 +54,14 @@
 /* lwIP core includes */
 #include "lwip/opt.h"
 
-#define TASKSTACKSIZE   512
+#define TASKSTACKSIZE   1024
 
 /* Pin driver handle */
 static PIN_Handle ledPinHandle;
 static PIN_State ledPinState;
 
-Task_Struct task0Struct, task1Struct;
-Char task0Stack[TASKSTACKSIZE], task1Stack[TASKSTACKSIZE];
+Task_Struct task1Struct;
+Char task1Stack[TASKSTACKSIZE];
 
 /*
  * Application LED pin configuration table:
@@ -73,19 +73,6 @@ PIN_Config ledPinTable[] = {
     PIN_TERMINATE
 };
 
-/*
- *  ======== heartBeatFxn ========
- *  Toggle the Board_LED0. The Task_sleep is determined by arg0 which
- *  is configured for the heartBeat Task instance.
- */
-Void heartBeatFxn(UArg arg0, UArg arg1)
-{
-    while (1) {
-        Task_sleep((UInt)arg0);
-        PIN_setOutputValue(ledPinHandle, Board_LED0,
-                           !PIN_getOutputValue(Board_LED0));
-    }
-}
 
 void initLwip(UArg arg0, UArg arg1)
 {
@@ -99,7 +86,6 @@ void initLwip(UArg arg0, UArg arg1)
  */
 int main(void)
 {
-    Task_Params taskParams;
     Task_Params taskParams1;
 
     /* Call board init functions */
@@ -109,19 +95,11 @@ int main(void)
     Board_initUART();
     // Board_initWatchdog();
 
-    /* Construct heartBeat Task  thread */
-    Task_Params_init(&taskParams);
-    taskParams.arg0 = 1000;
-    taskParams.stackSize = TASKSTACKSIZE;
-    taskParams.stack = &task0Stack;
-    taskParams.instance->name = "heartBeat";
-    Task_construct(&task0Struct, (Task_FuncPtr)heartBeatFxn, &taskParams, NULL);
-
     /* Construct lwip_init Task Thread */
     Task_Params_init(&taskParams1);
-    taskParams.stackSize = TASKSTACKSIZE;
-    taskParams.stack = &task1Stack;
-    taskParams.instance->name = "lwipInit";
+    taskParams1.stackSize = TASKSTACKSIZE;
+    taskParams1.stack = &task1Stack;
+    taskParams1.instance->name = "lwipInit";
     Task_construct(&task1Struct, (Task_FuncPtr)initLwip, &taskParams1, NULL);
 
     /* Open LED pins */
