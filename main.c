@@ -31,7 +31,7 @@
  */
 
 /*
- *  ======== empty.c ========
+ *  ======== maic.c ========
  */
 /* XDCtools Header files */
 #include <xdc/std.h>
@@ -54,86 +54,40 @@
 /* lwIP core includes */
 #include "lwip/opt.h"
 
-#define TASKSTACKSIZE   512
+/* Out lwip application include */
+#include "lwip_main.h"
 
-/* Pin driver handle */
-static PIN_Handle ledPinHandle;
-static PIN_State ledPinState;
 
-Task_Struct task0Struct, task1Struct;
-Char task0Stack[TASKSTACKSIZE], task1Stack[TASKSTACKSIZE];
+#define TASKSTACKSIZE   1024
 
-/*
- * Application LED pin configuration table:
- *   - All LEDs board LEDs are off.
- */
-PIN_Config ledPinTable[] = {
-    Board_LED0 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    Board_LED1 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    PIN_TERMINATE
-};
-
-/*
- *  ======== heartBeatFxn ========
- *  Toggle the Board_LED0. The Task_sleep is determined by arg0 which
- *  is configured for the heartBeat Task instance.
- */
-Void heartBeatFxn(UArg arg0, UArg arg1)
-{
-    while (1) {
-        Task_sleep((UInt)arg0);
-        PIN_setOutputValue(ledPinHandle, Board_LED0,
-                           !PIN_getOutputValue(Board_LED0));
-    }
-}
+Task_Struct task1Struct;
+Char task1Stack[TASKSTACKSIZE];
 
 void initLwip(UArg arg0, UArg arg1)
 {
 	main_lwip();
 }
 
-
-
 /*
  *  ======== main ========
  */
 int main(void)
 {
-    Task_Params taskParams;
     Task_Params taskParams1;
 
     /* Call board init functions */
     Board_initGeneral();
-    // Board_initI2C();
-    // Board_initSPI();
     Board_initUART();
-    // Board_initWatchdog();
-
-    /* Construct heartBeat Task  thread */
-    Task_Params_init(&taskParams);
-    taskParams.arg0 = 1000;
-    taskParams.stackSize = TASKSTACKSIZE;
-    taskParams.stack = &task0Stack;
-    taskParams.instance->name = "heartBeat";
-    Task_construct(&task0Struct, (Task_FuncPtr)heartBeatFxn, &taskParams, NULL);
 
     /* Construct lwip_init Task Thread */
     Task_Params_init(&taskParams1);
-    taskParams.stackSize = TASKSTACKSIZE;
-    taskParams.stack = &task1Stack;
-    taskParams.instance->name = "lwipInit";
+    taskParams1.stackSize = TASKSTACKSIZE;
+    taskParams1.stack = &task1Stack;
+    taskParams1.instance->name = "lwipInit";
     Task_construct(&task1Struct, (Task_FuncPtr)initLwip, &taskParams1, NULL);
 
-    /* Open LED pins */
-    ledPinHandle = PIN_open(&ledPinState, ledPinTable);
-    if(!ledPinHandle) {
-        System_abort("Error initializing board LED pins\n");
-    }
+    System_printf("Starting the lwip porting...\n");
 
-    PIN_setOutputValue(ledPinHandle, Board_LED1, 1);
-
-    System_printf("Starting the example\nSystem provider is set to SysMin. "
-                  "Halt the target to view any SysMin contents in ROV.\n");
     /* SysMin will only print to the console when you call flush or exit */
     System_flush();
 

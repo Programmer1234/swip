@@ -32,7 +32,7 @@ sio_fd_t sio_open(u8_t devnum)
 	uartParams.readReturnMode = UART_RETURN_FULL;
 
 	uartParams.writeMode = UART_MODE_BLOCKING;
-	uartParams.writeDataMode = UART_DATA_BINARY;
+	uartParams.writeDataMode = UART_DATA_BINARY;;
 
 	uartParams.baudRate = SIO_COMPORT_SPEED;
 
@@ -80,6 +80,7 @@ void sio_send(u8_t c, sio_fd_t fd)
 u32_t sio_tryread(sio_fd_t fd, u8_t* data, u32_t len)
 {
 	int ret = 0;
+	//char letter;
 
 	ret = UART_read(fd, data, len);
 
@@ -87,7 +88,9 @@ u32_t sio_tryread(sio_fd_t fd, u8_t* data, u32_t len)
 		System_abort("UART_read failed!");
 	}
 
-	//System_printf(data); System_flush();
+	//letter = *data;
+
+	//System_printf(letter); System_flush();
 
 	return ret;
 }
