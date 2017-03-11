@@ -42,11 +42,8 @@
 #include <ti/sysbios/knl/Task.h>
 
 /* TI-RTOS Header files */
-// #include <ti/drivers/I2C.h>
 #include <ti/drivers/PIN.h>
-// #include <ti/drivers/SPI.h>
 #include <ti/drivers/UART.h>
-// #include <ti/drivers/Watchdog.h>
 
 /* Board Header files */
 #include "Board.h"
@@ -54,7 +51,7 @@
 /* lwIP core includes */
 #include "lwip/opt.h"
 
-#define TASKSTACKSIZE   512
+#define TASKSTACKSIZE   1024
 #include "lwip_main.h"
 
 Task_Struct task1Struct;
