@@ -57,20 +57,6 @@
 #define TASKSTACKSIZE   512
 #include "lwip_main.h"
 
-
-Task_Struct task1Struct;
-Char task1Stack[TASKSTACKSIZE];
-
-/*
- * Application LED pin configuration table:
- *   - All LEDs board LEDs are off.
- */
-PIN_Config ledPinTable[] = {
-    Board_LED0 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    Board_LED1 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    PIN_TERMINATE
-};
-
 Task_Struct task1Struct;
 Char task1Stack[TASKSTACKSIZE];
 
