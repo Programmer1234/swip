@@ -9,8 +9,6 @@
 #include "lwip/udp.h"
 #include "lwip/debug.h"
 
-#include "udp_echo_raw.h"
-
 static struct udp_pcb *udpecho_raw_pcb;
 
 static void udpecho_raw_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p,

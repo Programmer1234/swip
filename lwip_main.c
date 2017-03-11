@@ -69,7 +69,6 @@
 #include <netif/slipif.h>
 
 /* Include apps headers*/
-#include "udp_echo_raw.h"
 
 struct netif slipif1;
 
@@ -118,20 +117,19 @@ static void netif_init(void)
 /* This function initializes applications */
 static void apps_init(void)
 {
-	/* Initialize UDP echo server on port 7 */
-	udpecho_raw_init();
-}
 
-/* This function initializes this lwIP test. When NO_SYS=1, this is done in
- * the main_loop context (there is no other one), when NO_SYS=0, this is done
- * in the tcpip_thread context */
-static void lwip_apps_init()
-{
-  /* Initialize network interfaces */
-  netif_init();
+#if LWIP_HTTPD_APP && LWIP_TCP
+  httpd_init();
+#endif /* LWIP_HTTPD_APP && LWIP_TCP */
 
-  /* Initialize applications */
-  apps_init();
+#if LWIP_TCPECHO_APP  && LWIP_TCP
+  tcpecho_raw_init();
+#endif
+
+#if LWIP_UDPECHO_APP && LWIP_UDP
+  udpecho_raw_init();
+#endif /* LWIP_UDPECHO_APP && LWIP_UDP */
+
 }
 
 /* This is somewhat different to other ports: we have a main loop here:
@@ -142,7 +140,12 @@ static void main_loop_lwip(void)
 {
   /* initialize lwIP stack, network interfaces and applications */
   lwip_init();
-  lwip_apps_init();
+
+  /* Initialize network interfaces */
+  netif_init();
+
+  /* Initialize applications */
+  apps_init();
 
   /* MAIN LOOP for driver update and timers */
   for (;;) {
