@@ -48,6 +48,7 @@
 /* Set this to 1 to use the netconn http server,
  * otherwise the raw api server will be used. */
 /*#define LWIP_HTTPD_APP_NETCONN     */
+#define LWIP_HTTPD_CLIENT			  1
 #define LWIP_NETBIOS_APP              0
 #define LWIP_NETIO_APP                0
 #define LWIP_PING_APP                 0

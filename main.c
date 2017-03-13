@@ -42,8 +42,10 @@
 #include <ti/sysbios/knl/Task.h>
 
 /* TI-RTOS Header files */
+#include <ti/drivers/pin/PINCC26XX.h>
 #include <ti/drivers/PIN.h>
 #include <ti/drivers/UART.h>
+#include <ti/sysbios/knl/Clock.h>
 
 /* Board Header files */
 #include "Board.h"
@@ -57,6 +59,27 @@
 Task_Struct task1Struct;
 Char task1Stack[TASKSTACKSIZE];
 
+#if LWIP_HTTPD_CLIENT && LWIP_TCP
+// 30 sec
+#define HTTP_REQ_INTERVAL   1000*30
+Task_Struct task2Struct;
+Char task2Stack[TASKSTACKSIZE];
+
+void reporter_task(UArg arg0, UArg arg1)
+{
+	while(1){
+		Task_sleep(HTTP_REQ_INTERVAL); // 20 sec
+		System_printf("\nreporter_task woke_up\n"); System_flush();
+		http_send_request("keep-alive1", 11);
+
+		Task_sleep(HTTP_REQ_INTERVAL);
+		System_printf("\nreporter_task woke_up\n"); System_flush();
+		http_send_request("keep-alive2", 11);
+	}
+}
+#endif
+
+
 void initLwip(UArg arg0, UArg arg1)
 {
 	main_lwip();
@@ -68,6 +91,7 @@ void initLwip(UArg arg0, UArg arg1)
 int main(void)
 {
     Task_Params taskParams1;
+    Task_Params taskParams2;
 
     /* Call board init functions */
     Board_initGeneral();
@@ -77,7 +101,18 @@ int main(void)
     taskParams1.stackSize = TASKSTACKSIZE;
     taskParams1.stack = &task1Stack;
     taskParams1.instance->name = "lwipInit";
+    taskParams1.priority = 1;
     Task_construct(&task1Struct, (Task_FuncPtr)initLwip, &taskParams1, NULL);
+
+	#if LWIP_HTTPD_CLIENT && LWIP_TCP
+    /* Construct HTTP request reporter Task Thread */
+    Task_Params_init(&taskParams2);
+    taskParams2.stackSize = TASKSTACKSIZE;
+    taskParams2.stack = &task2Stack;
+    taskParams2.instance->name = "http_reporter";
+    taskParams2.priority = 2; //higer priority
+    Task_construct(&task2Struct, (Task_FuncPtr)reporter_task, &taskParams2, NULL);
+	#endif
 
     System_printf("Starting the lwip porting...\n");
 

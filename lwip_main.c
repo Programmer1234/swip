@@ -130,6 +130,9 @@ static void apps_init(void)
   udpecho_raw_init();
 #endif /* LWIP_UDPECHO_APP && LWIP_UDP */
 
+#if LWIP_HTTPD_CLIENT && LWIP_TCP
+  tcp_setup();
+#endif
 }
 
 /* This is somewhat different to other ports: we have a main loop here:
