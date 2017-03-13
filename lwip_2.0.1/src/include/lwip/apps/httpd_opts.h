@@ -49,9 +49,10 @@
  * @{
  */
 
+/** DUDZ */
 /** Set this to 1 to support CGI (old style) */
 #if !defined LWIP_HTTPD_CGI || defined __DOXYGEN__
-#define LWIP_HTTPD_CGI            0
+#define LWIP_HTTPD_CGI            1
 #endif
 
 /** Set this to 1 to support CGI (new style) */
@@ -189,7 +190,7 @@
 /** Number of rx pbufs to enqueue to parse an incoming request (up to the first
     newline) */
 #if !defined LWIP_HTTPD_REQ_QUEUELEN || defined __DOXYGEN__
-#define LWIP_HTTPD_REQ_QUEUELEN             5
+#define LWIP_HTTPD_REQ_QUEUELEN             10
 #endif
 
 /** Number of (TCP payload-) bytes (in pbufs) to enqueue to parse and incoming

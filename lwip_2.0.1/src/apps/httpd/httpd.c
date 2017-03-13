@@ -2540,6 +2540,66 @@ http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
   return ERR_OK;
 }
 
+
+/**
+ * EXAMPLE CGI DUDZ
+ *
+ */
+#include <ti/drivers/pin/PINCC26XX.h>
+#include <ti/drivers/PIN.h>
+#include "Board.h"
+
+static PIN_Handle ledPinHandle;
+static PIN_State ledPinState;
+
+PIN_Config ledPinTable[] = {
+    Board_LED0 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    Board_LED1 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW  | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    PIN_TERMINATE
+};
+
+static const char filename__dudz_html[] = {
+/* /dudz.html (11 chars) */
+0x2f,0x64,0x75,0x64,0x7a,0x2e,0x68,0x74,0x6d,0x6c,0x00,
+};
+
+static const char filename__example_cgi[] = {
+/* /example.cgi (11 chars) */
+0x2f,0x65,0x78,0x61,0x6d,0x70,0x6c,0x65,0x2e,0x63,0x67,0x69,0x00,
+};
+
+const char *
+extractDudz(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+	int i;
+	for (i = 0; i < iNumParams; i++) {
+		if (strcmp(pcParam[i], "led0") == 0) {
+			if (strcmp(pcValue[i], "0") == 0) {
+				PIN_setOutputValue(ledPinHandle, Board_LED0, 0);
+			}
+			if (strcmp(pcValue[i], "1") == 0) {
+				PIN_setOutputValue(ledPinHandle, Board_LED0, 1);
+			}
+		}
+	}
+	for (i = 0; i < iNumParams; i++) {
+		if (strcmp(pcParam[i], "led1") == 0) {
+			if (strcmp(pcValue[i], "0") == 0) {
+				PIN_setOutputValue(ledPinHandle, Board_LED1, 0);
+			}
+			if (strcmp(pcValue[i], "1") == 0) {
+				PIN_setOutputValue(ledPinHandle, Board_LED1, 1);
+			}
+		}
+	}
+	return filename__dudz_html;
+}
+
+const tCGI myCGI[] = {{filename__example_cgi, extractDudz}};
+
+/* end DUDZ */
+
+
 /**
  * @ingroup httpd
  * Initialize the httpd: set up a listening PCB and bind it to the defined port
@@ -2549,6 +2609,20 @@ httpd_init(void)
 {
   struct tcp_pcb *pcb;
   err_t err;
+
+#if LWIP_HTTPD_CGI
+  ledPinHandle = PIN_open(&ledPinState, ledPinTable);
+  if(!ledPinHandle) {
+	   System_abort("Error initializing board LED pins\n");
+  }
+  PIN_setOutputValue(ledPinHandle, Board_LED0, 1);
+  PIN_setOutputValue(ledPinHandle, Board_LED1, 1);
+  PIN_setOutputValue(ledPinHandle, Board_LED0, 0);
+  PIN_setOutputValue(ledPinHandle, Board_LED1, 0);
+
+  http_set_cgi_handlers(&myCGI,1);
+#endif
+
 
 #if HTTPD_USE_MEM_POOL
   LWIP_MEMPOOL_INIT(HTTPD_STATE);

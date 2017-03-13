@@ -83,6 +83,7 @@
 #define LWIP_NETIF_LINK_CALLBACK   1
 #define LWIP_NETIF_STATUS_CALLBACK 1
 
+
 #ifdef LWIP_DEBUG
 
 #define LWIP_DBG_MIN_LEVEL         0
@@ -196,10 +197,10 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_QUEUE_OOSEQ         1
 
 /* TCP Maximum segment size. */
-#define TCP_MSS                 16
+#define TCP_MSS                 32
 
 /* TCP sender buffer space (bytes). */
-#define TCP_SND_BUF             32
+#define TCP_SND_BUF             64
 
 /* TCP sender buffer space (pbufs). This must be at least = 2 *
    TCP_SND_BUF/TCP_MSS for things to work. */
@@ -211,7 +212,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_SNDLOWAT           (TCP_SND_BUF/2)
 
 /* TCP receive window. */
-#define TCP_WND                 32
+#define TCP_WND                 256
 
 /* Maximum number of retransmissions of data segments. */
 #define TCP_MAXRTX              12
