@@ -29,8 +29,13 @@
 /* #define SIO_USE_COMPORT 0 */
 #ifdef USE_SLIPIF
 #if USE_SLIPIF
+/*
 #define LWIP_PORT_INIT_SLIP1_IPADDR(addr)   IP4_ADDR((addr), 10, 0,   0, 111)
 #define LWIP_PORT_INIT_SLIP1_GW(addr)       IP4_ADDR((addr), 10, 0,   0, 138)
+#define LWIP_PORT_INIT_SLIP1_NETMASK(addr)  IP4_ADDR((addr), 255, 255, 255, 0)
+*/
+#define LWIP_PORT_INIT_SLIP1_IPADDR(addr)   IP4_ADDR((addr), 192, 168,   43, 111)
+#define LWIP_PORT_INIT_SLIP1_GW(addr)       IP4_ADDR((addr),  192, 168,   43, 138)
 #define LWIP_PORT_INIT_SLIP1_NETMASK(addr)  IP4_ADDR((addr), 255, 255, 255, 0)
 #if USE_SLIPIF > 1
 #define LWIP_PORT_INIT_SLIP2_IPADDR(addr)   IP4_ADDR((addr), 192, 168,   2, 1)
@@ -48,7 +53,7 @@
 /* Set this to 1 to use the netconn http server,
  * otherwise the raw api server will be used. */
 /*#define LWIP_HTTPD_APP_NETCONN     */
-#define LWIP_HTTPD_CLIENT			  1
+#define LWIP_HTTPD_CLIENT			  0
 #define LWIP_NETBIOS_APP              0
 #define LWIP_NETIO_APP                0
 #define LWIP_PING_APP                 0

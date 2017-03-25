@@ -47,6 +47,11 @@
 #include <ti/drivers/UART.h>
 #include <ti/sysbios/knl/Clock.h>
 
+#include <ti/sysbios/knl/Semaphore.h>
+#include <ti/sysbios/knl/Swi.h>
+#include <xdc/runtime/Error.h>
+
+
 /* Board Header files */
 #include "Board.h"
 
@@ -59,24 +64,61 @@
 Task_Struct task1Struct;
 Char task1Stack[TASKSTACKSIZE];
 
+
+
 #if LWIP_HTTPD_CLIENT && LWIP_TCP
-// 30 sec
-#define HTTP_REQ_INTERVAL   1000*30
 Task_Struct task2Struct;
 Char task2Stack[TASKSTACKSIZE];
 
-void reporter_task(UArg arg0, UArg arg1)
-{
-	while(1){
-		Task_sleep(HTTP_REQ_INTERVAL); // 20 sec
-		System_printf("\nreporter_task woke_up\n"); System_flush();
-		http_send_request("keep-alive1", 11);
+PIN_Config buttonPinTable[] = {
+    Board_BUTTON0  | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,
+    Board_BUTTON1  | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,
+    PIN_TERMINATE
+};
 
-		Task_sleep(HTTP_REQ_INTERVAL);
-		System_printf("\nreporter_task woke_up\n"); System_flush();
-		http_send_request("keep-alive2", 11);
+static Swi_Handle swi0;
+
+static Semaphore_Handle sem;
+
+static PIN_State buttonPinState;
+
+static PIN_Handle buttonPinHandle;
+
+void buttonCallbackFxn(PIN_Handle handle, PIN_Id pinId) {
+	CPUdelay(8000*50);
+	switch (pinId) {
+		case Board_BUTTON0:
+			Swi_post(swi0);
+			break;
+
+		case Board_BUTTON1:
+			break;
+
+		default:
+			/* Do nothing */
+			break;
 	}
 }
+
+
+void swiFunc0(UArg param0, UArg param1)
+{
+	System_printf("Posting semaphore\n"); System_flush();
+	Semaphore_post(sem);
+}
+
+
+void reporter_task(UArg arg0, UArg arg1)
+{
+	System_printf("http reporter task started\n"); System_flush();
+	while (1)
+	{
+		Semaphore_pend(sem, BIOS_WAIT_FOREVER);
+		System_printf("\nreporter_task woke_up\n"); System_flush();
+		http_send_request("button1-pressed", 15);
+	 }
+}
+
 #endif
 
 
@@ -105,6 +147,29 @@ int main(void)
     Task_construct(&task1Struct, (Task_FuncPtr)initLwip, &taskParams1, NULL);
 
 	#if LWIP_HTTPD_CLIENT && LWIP_TCP
+    Error_Block eb;
+    Swi_Params swiParams0;
+
+    buttonPinHandle = PIN_open(&buttonPinState, buttonPinTable);
+    if(!buttonPinHandle) {
+        System_abort("Error initializing button pins\n");
+    }
+
+    /* init semaphore */
+    sem = Semaphore_create(0, NULL, &eb);
+    if (sem == NULL) {
+    	System_abort("Semaphore create failed");
+    }
+
+    /* init SWI handling led */
+    Error_init(&eb);
+    Swi_Params_init(&swiParams0);
+    swiParams0.priority = 5;
+    swi0 = Swi_create(swiFunc0, &swiParams0, &eb);
+    if (swi0 == NULL) {Swi_create
+     System_abort("Swi0 create failed");
+    }
+
     /* Construct HTTP request reporter Task Thread */
     Task_Params_init(&taskParams2);
     taskParams2.stackSize = TASKSTACKSIZE;
@@ -112,6 +177,11 @@ int main(void)
     taskParams2.instance->name = "http_reporter";
     taskParams2.priority = 2; //higer priority
     Task_construct(&task2Struct, (Task_FuncPtr)reporter_task, &taskParams2, NULL);
+
+    /* Setup callback for button pins */
+    if (PIN_registerIntCb(buttonPinHandle, &buttonCallbackFxn) != 0) {
+        System_abort("Error registering button callback function");
+    }
 	#endif
 
     System_printf("Starting the lwip porting...\n");

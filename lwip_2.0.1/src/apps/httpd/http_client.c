@@ -15,9 +15,7 @@
 #if LWIP_TCP
 #define MAX_HTTP_REQ_SIZE    			200
 #define DEST_PORT    					80
-#define DEST_WEB_SERVER_IP(addr)   		IP4_ADDR((addr), 10, 0, 0, 3)
-
-
+#define DEST_WEB_SERVER_IP(addr)   		IP4_ADDR((addr), 45, 33, 49, 119)
 
 struct http_client_state {
   u8_t buffer[MAX_HTTP_REQ_SIZE];
@@ -201,7 +199,6 @@ void http_send_request(const void* data, u16_t data_length)
 void tcp_setup(void)
 {
 	http_send_request("initialized", 9);
-	//http_send_request("123", 3)
 }
 
 #endif

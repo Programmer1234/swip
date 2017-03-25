@@ -197,10 +197,10 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_QUEUE_OOSEQ         1
 
 /* TCP Maximum segment size. */
-#define TCP_MSS                 32
+#define TCP_MSS                 128
 
 /* TCP sender buffer space (bytes). */
-#define TCP_SND_BUF             64
+#define TCP_SND_BUF             256
 
 /* TCP sender buffer space (pbufs). This must be at least = 2 *
    TCP_SND_BUF/TCP_MSS for things to work. */

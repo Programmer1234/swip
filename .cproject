@@ -103,7 +103,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="lwip_2.0.1/src/apps/mdns|lwip_2.0.1/src/api/sockets.c|lwip_2.0.1/src/core/ipv6|lwip_2.0.1/src/include/netif/ppp|lwip_2.0.1/src/netif/ppp|lwip_2.0.1/src/apps/sntp|lwip_2.0.1/src/apps/snmp|lwip_2.0.1/src/apps/netbiosns|lwip_2.0.1/src/apps/mqtt|lwip_2.0.1/src/apps/tftp|lwip_2.0.1/src/apps/httpd|lwip_2.0.1/src/apps/lwiperf|lwip_2.0.1/doc|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="lwip_2.0.1/src/apps/httpd/fsdata.c|lwip_2.0.1/src/apps/httpd/makefsdata|lwip_2.0.1/src/apps/httpd/fs|lwip_2.0.1/src/apps/mdns|lwip_2.0.1/src/api/sockets.c|lwip_2.0.1/src/core/ipv6|lwip_2.0.1/src/include/netif/ppp|lwip_2.0.1/src/netif/ppp|lwip_2.0.1/src/apps/sntp|lwip_2.0.1/src/apps/snmp|lwip_2.0.1/src/apps/netbiosns|lwip_2.0.1/src/apps/mqtt|lwip_2.0.1/src/apps/tftp|lwip_2.0.1/src/apps/lwiperf|lwip_2.0.1/doc|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
