@@ -32,44 +32,7 @@
 #ifndef LWIP_ARCH_SYS_ARCH_H
 #define LWIP_ARCH_SYS_ARCH_H
 
-/* HANDLE is used for sys_sem_t but we won't include windows.h */
-struct _sys_sem {
-  void *sem;
-};
-typedef struct _sys_sem sys_sem_t;
-#define sys_sem_valid(sema) (((sema) != NULL) && ((sema)->sem != NULL)  && ((sema)->sem != (void*)-1))
-#define sys_sem_set_invalid(sema) ((sema)->sem = NULL)
 
-/* HANDLE is used for sys_mutex_t but we won't include windows.h */
-struct _sys_mut {
-  void *mut;
-};
-typedef struct _sys_mut sys_mutex_t;
-#define sys_mutex_valid(mutex) (((mutex) != NULL) && ((mutex)->mut != NULL)  && ((mutex)->mut != (void*)-1))
-#define sys_mutex_set_invalid(mutex) ((mutex)->mut = NULL)
-
-#ifndef MAX_QUEUE_ENTRIES
-#define MAX_QUEUE_ENTRIES 100
-#endif
-struct lwip_mbox {
-  void* sem;
-  void* q_mem[MAX_QUEUE_ENTRIES];
-  u32_t head, tail;
-};
-typedef struct lwip_mbox sys_mbox_t;
-#define SYS_MBOX_NULL NULL
-#define sys_mbox_valid(mbox) ((mbox != NULL) && ((mbox)->sem != NULL)  && ((mbox)->sem != (void*)-1))
-#define sys_mbox_set_invalid(mbox) ((mbox)->sem = NULL)
-
-/* DWORD (thread id) is used for sys_thread_t but we won't include windows.h */
-typedef u32_t sys_thread_t;
-
-sys_sem_t* sys_arch_netconn_sem_get(void);
-void sys_arch_netconn_sem_alloc(void);
-void sys_arch_netconn_sem_free(void);
-#define LWIP_NETCONN_THREAD_SEM_GET()   sys_arch_netconn_sem_get()
-#define LWIP_NETCONN_THREAD_SEM_ALLOC() sys_arch_netconn_sem_alloc()
-#define LWIP_NETCONN_THREAD_SEM_FREE()  sys_arch_netconn_sem_free()
 
 #endif /* LWIP_ARCH_SYS_ARCH_H */
 
